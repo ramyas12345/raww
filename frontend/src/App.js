@@ -5,8 +5,8 @@ import {
   PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import {
-  LayoutGrid, History, Zap, Fingerprint, Activity, Microscope, X, Table as TableIcon,
-  Download, Share2, Clock, CheckCircle, Target, ArrowRight, RotateCcw, Trash2,
+  LayoutGrid, History, Zap, Activity, Microscope, X, Table as TableIcon,
+  Download, Share2, Clock, Target, ArrowRight, RotateCcw, Trash2,
   FileText, HelpCircle, Upload
 } from 'lucide-react';
 
@@ -253,7 +253,7 @@ const App = () => {
   const solveRegression = async (x, y) => {
     if (!x || !y) return;
     try {
-      const url = new URL('http://localhost:8000/regression');
+      const url = new URL(`${window.location.origin}/regression`);
       url.searchParams.set('x_col', x);
       url.searchParams.set('y_col', y);
       const res = await fetch(url.toString());
@@ -271,7 +271,7 @@ const App = () => {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('http://localhost:8000/upload', { method: 'POST', body: formData });
+      const res = await fetch('/upload', { method: 'POST', body: formData });
       if (!res.ok) throw new Error("Connection Refused");
       const result = await res.json();
       if (result && result.status === "success") {
