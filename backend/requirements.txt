@@ -3,4 +3,4 @@ uvicorn
 pandas
 numpy
 python-multipart
-mangum
+openpyxl

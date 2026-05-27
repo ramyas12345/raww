@@ -16,15 +16,36 @@ app.add_middleware(
 state = {"df": None}
 
 
+def read_file(contents: bytes, filename: str) -> pd.DataFrame:
+    ext = filename.lower().split('.')[-1]
+    if ext == 'csv':
+        try:
+            return pd.read_csv(io.BytesIO(contents))
+        except Exception:
+            return pd.read_csv(io.BytesIO(contents), delimiter=';')
+    elif ext in ['xlsx', 'xls']:
+        return pd.read_excel(io.BytesIO(contents))
+    elif ext == 'json':
+        try:
+            return pd.read_json(io.BytesIO(contents))
+        except Exception:
+            return pd.json_normalize(pd.read_json(io.BytesIO(contents), typ='series').tolist())
+    elif ext == 'tsv':
+        return pd.read_csv(io.BytesIO(contents), sep='\t')
+    else:
+        # fallback: try csv
+        return pd.read_csv(io.BytesIO(contents))
+
+
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
         contents = await file.read()
-        df = pd.read_csv(io.BytesIO(contents))
+        df = read_file(contents, file.filename)
         state["df"] = df
 
-        if len(df) < 10:
-            return {"status": "error", "message": "Dataset too small for analysis (minimum 10 rows required)"}
+        if len(df) < 5:
+            return {"status": "error", "message": "Dataset too small for analysis (minimum 5 rows required)"}
 
         columns = df.columns.tolist()
         types = {
@@ -38,6 +59,16 @@ async def upload_file(file: UploadFile = File(...)):
             return {"status": "error", "message": "No numeric data detected in this dataset"}
 
         preview = df.head(100).replace({np.nan: None}).to_dict(orient="records")
+
+        # ── Missing values analysis ────────────────────────────────────────────
+        missing_info = {}
+        for col in columns:
+            missing_count = int(df[col].isna().sum())
+            missing_pct = round(missing_count / len(df) * 100, 1)
+            missing_info[col] = {"count": missing_count, "pct": missing_pct}
+
+        # ── Duplicate rows ─────────────────────────────────────────────────────
+        duplicate_count = int(df.duplicated().sum())
 
         # ── Column-wise stats ──────────────────────────────────────────────────
         col_stats = {}
@@ -53,14 +84,31 @@ async def upload_file(file: UploadFile = File(...)):
                 "std":    round(float(s.std()), 4),
             }
 
-        # ── Insight report (8–12 lines, rule-based) ───────────────────────────
+        # ── Categorical stats ──────────────────────────────────────────────────
+        cat_stats = {}
+        cat_cols = [c for c in columns if types[c] == "Categorical"]
+        for col in cat_cols:
+            s = df[col].dropna()
+            vc = s.value_counts()
+            cat_stats[col] = {
+                "unique": int(s.nunique()),
+                "top": vc.index[0] if len(vc) > 0 else None,
+                "top_count": int(vc.iloc[0]) if len(vc) > 0 else 0,
+            }
+
+        # ── Insight report ────────────────────────────────────────────────────
         insights = []
 
-        # 1. Dataset size
         insights.append(f"Dataset contains {len(df)} rows and {len(columns)} columns "
                         f"({len(numeric_cols)} numeric, {len(columns) - len(numeric_cols)} categorical).")
 
-        # 2–5. Per-column stats
+        if duplicate_count > 0:
+            insights.append(f"Found {duplicate_count} duplicate row(s) — consider removing them before analysis.")
+
+        high_missing = [(col, info) for col, info in missing_info.items() if info['pct'] > 10]
+        if high_missing:
+            insights.append("High missing values in: " + ", ".join([f"{c} ({i['pct']}%)" for c, i in high_missing[:3]]))
+
         for col in numeric_cols[:4]:
             st = col_stats.get(col)
             if not st:
@@ -70,13 +118,11 @@ async def upload_file(file: UploadFile = File(...)):
                 f"range [{st['min']} – {st['max']}], σ = {st['std']}"
             )
 
-        # 6. Highest variance column
         if numeric_cols:
             variances = {col: df[col].dropna().var() for col in numeric_cols}
             high_var_col = max(variances, key=variances.get)
             insights.append(f"Highest variance column: '{high_var_col}' (σ² = {round(variances[high_var_col], 2)})")
 
-        # 7–8. Correlation-based insights
         corr_pairs = []
         for i in range(len(numeric_cols)):
             for j in range(i + 1, len(numeric_cols)):
@@ -100,7 +146,6 @@ async def upload_file(file: UploadFile = File(...)):
                 f"(r = {strongest[2]}, {strength_word} {direction})"
             )
 
-        # 9. Anomaly / outlier check (values beyond mean ± 3σ)
         outlier_cols = []
         for col in numeric_cols:
             s = df[col].dropna()
@@ -118,14 +163,13 @@ async def upload_file(file: UploadFile = File(...)):
         else:
             insights.append("No extreme outliers detected (3σ rule) across numeric columns.")
 
-        # 10. General trend note
         if len(numeric_cols) >= 2:
             first, last = numeric_cols[0], numeric_cols[-1]
             insights.append(
                 f"General note: '{first}' and '{last}' are available as regression targets in Neural Lab."
             )
 
-        # ── Pairwise correlations for system_relations panel ──────────────────
+        # ── System relations ───────────────────────────────────────────────────
         system_relations = []
         for i in range(min(len(numeric_cols) - 1, 4)):
             a, b = numeric_cols[i], numeric_cols[i + 1]
@@ -136,7 +180,7 @@ async def upload_file(file: UploadFile = File(...)):
             if not np.isnan(r):
                 system_relations.append({"colA": a, "colB": b, "strength": round(float(r), 2)})
 
-        # ── Correlation matrix (all numeric pairs) ────────────────────────────
+        # ── Full correlation matrix ────────────────────────────────────────────
         corr_matrix = None
         if len(numeric_cols) >= 2:
             cm = df[numeric_cols].corr().round(3)
@@ -145,7 +189,7 @@ async def upload_file(file: UploadFile = File(...)):
                 "values":  cm.replace({np.nan: None}).values.tolist()
             }
 
-        # ── Thresholds for critical cell highlighting ─────────────────────────
+        # ── Thresholds ─────────────────────────────────────────────────────────
         thresholds = {
             col: {"critical_high": float(df[col].mean() + 2 * df[col].std())}
             for col in numeric_cols
@@ -162,11 +206,44 @@ async def upload_file(file: UploadFile = File(...)):
                 "insights":         insights,
                 "system_relations": system_relations,
                 "col_stats":        col_stats,
+                "cat_stats":        cat_stats,
                 "corr_matrix":      corr_matrix,
                 "thresholds":       thresholds,
+                "missing_info":     missing_info,
+                "duplicate_count":  duplicate_count,
+                "file_type":        file.filename.split('.')[-1].upper(),
             }
         }
 
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/clean")
+async def clean_data(action: str, column: str = None, fill_value: str = None):
+    if state["df"] is None:
+        return {"status": "error", "message": "No data loaded"}
+    try:
+        df = state["df"].copy()
+        if action == "remove_duplicates":
+            before = len(df)
+            df = df.drop_duplicates()
+            state["df"] = df
+            return {"status": "success", "message": f"Removed {before - len(df)} duplicate rows", "rows": len(df)}
+        elif action == "fill_missing" and column:
+            if pd.api.types.is_numeric_dtype(df[column]):
+                val = df[column].mean() if fill_value == "mean" else df[column].median() if fill_value == "median" else float(fill_value)
+                df[column] = df[column].fillna(val)
+            else:
+                df[column] = df[column].fillna(fill_value or "Unknown")
+            state["df"] = df
+            return {"status": "success", "message": f"Filled missing values in '{column}'"}
+        elif action == "drop_column" and column:
+            df = df.drop(columns=[column])
+            state["df"] = df
+            return {"status": "success", "message": f"Dropped column '{column}'"}
+        else:
+            return {"status": "error", "message": "Unknown action"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -191,7 +268,6 @@ async def calculate_regression(x_col: str, y_col: str):
         m, b = np.polyfit(x, y, 1)
         r    = float(np.corrcoef(x, y)[0, 1])
 
-        # R²
         y_pred = m * x + b
         ss_res = float(np.sum((y - y_pred) ** 2))
         ss_tot = float(np.sum((y - y.mean()) ** 2))
@@ -227,7 +303,6 @@ async def calculate_regression(x_col: str, y_col: str):
 
 @app.get("/correlation")
 async def full_correlation(col_a: str, col_b: str):
-    """Return Pearson r + interpretation for any two numeric columns."""
     if state["df"] is None:
         return {"status": "error", "message": "No data loaded"}
     try:
