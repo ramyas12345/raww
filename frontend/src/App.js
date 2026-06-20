@@ -53,20 +53,21 @@ const glowKeyframes = `
 
 const CHART_TYPES = [
   { id:'scatter',   label:'Scatter Plot' },
-  { id:'bar',       label:'Bar Chart'    },
-  { id:'line',      label:'Line Graph'   },
-  { id:'area',      label:'Area Chart'   },
-  { id:'histogram', label:'Histogram'    },
-  { id:'pie',       label:'Pie Chart'    },
-  { id:'radar',     label:'Radar Chart'  },
-  { id:'donut',     label:'Donut Chart'  },
-  { id:'stacked',   label:'Stacked Bar'  },
-  { id:'stepped',   label:'Step Line'    },
+  { id:'bar',       label:'Bar Chart' },
+  { id:'line',      label:'Line Graph' },
+  { id:'area',      label:'Area Chart' },
+  { id:'histogram', label:'Histogram' },
+  { id:'pie',       label:'Pie Chart' },
+  { id:'radar',     label:'Radar Chart' },
+  { id:'donut',     label:'Donut Chart' },
+  { id:'stacked',   label:'Stacked Bar' },
+  { id:'stepped',   label:'Step Line' },
 ];
+
 const COLORS = ['#7C3AED','#A78BFA','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#14b8a6','#f97316','#6366f1'];
 const ACCEPTED_TYPES = '.csv,.xlsx,.xls,.json,.tsv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.pdf';
 
-/* ── RAWW Logo ──────────────────────────────────────────────────── */
+/*  RAWW Logo  */
 const RawwMark = ({ size = 32 }) => (
   <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="100" height="100" rx="18" fill="#7C3AED"/>
@@ -75,7 +76,7 @@ const RawwMark = ({ size = 32 }) => (
   </svg>
 );
 
-/* ── Heatmap Cell ───────────────────────────────────────────────── */
+/*  Heatmap Cell  */
 const HeatmapCell = ({ value }) => {
   const abs = Math.abs(value);
   const isPos = value >= 0;
@@ -90,7 +91,7 @@ const HeatmapCell = ({ value }) => {
   );
 };
 
-/* ── Help Card ──────────────────────────────────────────────────── */
+/*  Help Card  */
 const HelpCard = ({ onClose, title, sections }) => (
   <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
     <div className="absolute inset-0 bg-black/70 backdrop-blur-xl" onClick={onClose} />
@@ -129,7 +130,7 @@ const HelpBtn = ({ onClick }) => (
   </button>
 );
 
-/* ── FIX 1: InlineConfirm — explicit top/right/bottom/left, no inset shorthand ── */
+/*  FIX 1: InlineConfirm — explicit top/right/bottom/left, no inset shorthand  */
 const InlineConfirm = ({ message, confirmLabel = 'Confirm', confirmColor = '#dc2626', onConfirm, onCancel }) => (
   <div style={{ position:'fixed', top:0, right:0, bottom:0, left:0, zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
     <div style={{ position:'absolute', top:0, right:0, bottom:0, left:0, background:'rgba(0,0,0,0.72)' }} onClick={onCancel} />
@@ -144,7 +145,7 @@ const InlineConfirm = ({ message, confirmLabel = 'Confirm', confirmColor = '#dc2
   </div>
 );
 
-/* ── Dataset helpers ────────────────────────────────────────────── */
+/*  Dataset helpers  */
 function datasetOverview(summary) {
   if (!summary) return 'No dataset loaded yet.';
   const { total_rows, columns, types } = summary;
@@ -170,19 +171,19 @@ function datasetForViz(summary, vizX, vizY, selectedCharts) {
 }
 
 const CHART_EXPLANATIONS = {
-  scatter:   'A scatter plot places each row as a dot at (X, Y). Best for seeing correlations between two numeric variables.',
-  bar:       'A bar chart draws one vertical bar per data point. Best when X is categorical and you want to compare values side by side.',
-  line:      'A line chart connects points in sequence. Best for showing how a value changes over time or an ordered series.',
-  area:      'An area chart is a filled line chart. Emphasises the volume or magnitude of a metric over time.',
+  scatter: 'A scatter plot places each row as a dot at (X, Y). Best for seeing correlations between two numeric variables.',
+  bar:     'A bar chart draws one vertical bar per data point. Best when X is categorical and you want to compare values side by side.',
+  line:    'A line chart connects points in sequence. Best for showing how a value changes over time or an ordered series.',
+  area:    'An area chart is a filled line chart. Emphasises the volume or magnitude of a metric over time.',
   histogram: 'A histogram groups Y values into bins and counts how many data points fall into each. Reveals the shape of a distribution.',
-  pie:       'A pie chart shows proportions. Most effective with a small number of categories (under 6).',
-  radar:     'A radar chart plots multiple variables on radial axes — ideal for comparing a profile across many dimensions.',
-  donut:     'A donut chart is a pie chart with a hollow centre. Easier to read arc lengths than angles. Works best with 3–6 categories.',
-  stacked:   'A stacked bar chart shows the contribution of sub-series within each category bar.',
-  stepped:   'A step line chart shows values that change abruptly at intervals rather than gradually.',
+  pie:     'A pie chart shows proportions. Most effective with a small number of categories (under 6).',
+  radar:   'A radar chart plots multiple variables on radial axes — ideal for comparing a profile across many dimensions.',
+  donut:   'A donut chart is a pie chart with a hollow centre. Easier to read arc lengths than angles. Works best with 3–6 categories.',
+  stacked: 'A stacked bar chart shows the contribution of sub-series within each category bar.',
+  stepped: 'A step line chart shows values that change abruptly at intervals rather than gradually.',
 };
 
-/* ── Overview feature cards ─────────────────────────────────────── */
+/*  Overview feature cards  */
 const OVERVIEW_FEATURES = [
   { id:'missing',      icon: <AlertTriangle size={22} className="text-amber-400"/>,   label:'Missing Values',    desc:'See which columns have gaps and how severe the missing data problem is.',                        preloaded:false },
   { id:'correlation',  icon: <GitBranch size={22} className="text-violet-400"/>,      label:'Correlation Matrix', desc:'Pearson r heatmap showing how every pair of numeric columns relate to each other.',             preloaded:false },
@@ -190,7 +191,7 @@ const OVERVIEW_FEATURES = [
   { id:'distribution', icon: <BarChart2 size={22} className="text-violet-400"/>,      label:'Column Distribution', desc:'Key statistics (mean, median, min, max, std dev) for every numeric column.',                preloaded:false },
 ];
 
-/* ════════════════════════════════════════════════════════════════ */
+/*  */
 const App = () => {
   const [introStage, setIntroStage]         = useState('promo');
   const [userName, setUserName]             = useState('');
@@ -455,8 +456,7 @@ const App = () => {
     return (
       <div key={type} className="bg-[#0E0E1A] border border-white/8 p-5 md:p-7 rounded-2xl shadow-xl">
         <div className="flex items-center gap-3 mb-5">
-          <span className="text-2xl">{ci.emoji}</span>
-          <div>
+            <div>
             <p className="text-[10px] text-violet-400 font-semibold uppercase tracking-wider mb-0.5">Chart</p>
             <h3 className="text-base font-bold text-white">{ci.label}</h3>
           </div>
@@ -517,7 +517,7 @@ const App = () => {
     </label>
   );
 
-  /* ── Table Editor helpers (stable references via useCallback) ─── */
+  /*  Table Editor helpers (stable references via useCallback)  */
   const editRows = localRows || data?.preview || [];
   const editCols = data?.summary?.columns || [];
 
@@ -586,7 +586,7 @@ const App = () => {
 
   const TAB_HEADINGS = { overview:'Dashboard', regression:'Regression Analysis', visuals:'Visual Studio', clean:'Data Cleaning', history:'Upload History' };
 
-  /* ════════ PROMO ════════════════════════════════════════════════ */
+  /*  PROMO  */
   if (!isWelcomed && introStage==='promo') return (
     <div className="min-h-screen bg-[#06060F] text-white flex flex-col overflow-hidden">
       <style>{glowKeyframes}</style>
@@ -605,7 +605,7 @@ const App = () => {
         <p className="fu3 text-slate-400 text-base max-w-xl leading-relaxed mb-3">Upload any dataset — CSV, Excel, JSON, images, or TSV — and get instant statistics, correlations, regression analysis, and beautiful visualisations.</p>
         <p className="fu3 text-slate-500 text-sm max-w-md leading-relaxed mb-10">RAWW processes your files through a secure backend and returns professional-grade analysis in seconds. No code, no setup, no account needed.</p>
         <div className="fu4 flex flex-wrap justify-center gap-2 mb-12">
-          {['📊 Auto Statistics','🔗 Correlation Matrix','📈 Linear Regression','🌊 10 Chart Types','⚡ AI Insights','🧹 Data Cleaning','📁 CSV · XLS · JSON · Images'].map(t=>(
+          {['Auto Statistics','Correlation Matrix','Linear Regression','10 Chart Types','AI Insights','Data Cleaning','CSV · XLS · JSON · Images'].map(t=>(
             <span key={t} className="text-[10px] font-medium text-slate-500 border border-white/8 px-3 py-1.5 rounded-full bg-white/[0.02]">{t}</span>
           ))}
         </div>
@@ -627,7 +627,7 @@ const App = () => {
     </div>
   );
 
-  /* ════════ ONBOARD ══════════════════════════════════════════════ */
+  /*  ONBOARD  */
   if (!isWelcomed && introStage==='onboard') return (
     <div className="min-h-screen bg-[#06060F] text-white flex flex-col overflow-hidden">
       <style>{glowKeyframes}</style>
@@ -671,7 +671,7 @@ const App = () => {
     </div>
   );
 
-  /* ════════ MAIN DASHBOARD ═══════════════════════════════════════ */
+  /*  MAIN DASHBOARD  */
   const numericCols = data?.summary?.columns?.filter(c => data.summary?.types?.[c]==='Numeric') || [];
 
   return (
@@ -743,7 +743,7 @@ const App = () => {
 
         {!data && activeTab!=='history' && <div className="max-w-lg mx-auto py-8"><UploadZone/></div>}
 
-        {/* ── OVERVIEW TAB ─────────────────────────────────────────── */}
+        {/*  OVERVIEW TAB  */}
         {data && activeTab==='overview' && (
           <div className="space-y-6 pb-20">
             {(data.summary?.duplicate_count>0||Object.values(data.summary?.missing_info||{}).some(m=>m.pct>10)) && (
@@ -800,7 +800,7 @@ const App = () => {
                     <div className="mb-3">{f.icon}</div>
                     <p className="text-sm font-semibold text-white mb-1">{f.label}</p>
                     <p className="text-[11px] text-slate-500 leading-relaxed">{f.desc}</p>
-                    <div className={`mt-3 text-[10px] font-semibold transition-colors ${activeFeature===f.id?'text-violet-400':'text-slate-600'}`}>{activeFeature===f.id?'▲ Collapse':'▼ Open'}</div>
+                    <div className={`mt-3 text-[10px] font-semibold transition-colors ${activeFeature===f.id?'text-violet-400':'text-slate-600'}`}>{activeFeature===f.id?' Collapse':' Open'}</div>
                   </button>
                 ))}
               </div>
@@ -956,7 +956,7 @@ const App = () => {
           </div>
         )}
 
-        {/* ── VISUALS TAB ──────────────────────────────────────────── */}
+        {/*  VISUALS TAB  */}
         {data && activeTab==='visuals' && (
           <div className="space-y-6 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -980,7 +980,7 @@ const App = () => {
                 <Sparkles size={13} className="text-violet-400 shrink-0"/>
                 <p className="text-[10px] font-semibold text-violet-400 mr-1">Suggested:</p>
                 {suggestedCharts.map(id=>{const c=CHART_TYPES.find(ct=>ct.id===id);return(
-                  <button key={id} onClick={()=>!selectedCharts.includes(id)&&toggleChart(id)} className="text-[10px] font-medium text-violet-300 border border-violet-500/25 px-3 py-1.5 rounded-lg hover:bg-violet-500/15 transition-all">{c.emoji} {c.label}</button>
+                  <button key={id} onClick={()=>!selectedCharts.includes(id)&&toggleChart(id)} className="text-[10px] font-medium text-violet-300 border border-violet-500/25 px-3 py-1.5 rounded-lg hover:bg-violet-500/15 transition-all">{c.label}</button>
                 );})}
               </div>
             )}
@@ -996,9 +996,8 @@ const App = () => {
                 {CHART_TYPES.map(chart=>(
                   <button key={chart.id} onClick={()=>toggleChart(chart.id)}
                     className={`p-3 rounded-xl border transition-all text-left ${selectedCharts.includes(chart.id)?'bg-violet-500/10 border-violet-500 text-white':'bg-black/20 border-white/5 text-slate-500 hover:border-white/15 hover:text-white'}`}>
-                    <div className="text-xl mb-1.5">{chart.emoji}</div>
                     <p className="text-[10px] font-semibold truncate">{chart.label}</p>
-                    {suggestedCharts.includes(chart.id)&&<div className="text-[8px] text-violet-400 font-medium mt-1">✦ suggested</div>}
+                    {suggestedCharts.includes(chart.id)&&<div className="text-[8px] text-violet-400 font-medium mt-1">suggested</div>}
                   </button>
                 ))}
               </div>
@@ -1009,7 +1008,7 @@ const App = () => {
           </div>
         )}
 
-        {/* ── REGRESSION TAB ───────────────────────────────────────── */}
+        {/*  REGRESSION TAB  */}
         {data && activeTab==='regression' && (
           <div className="space-y-6 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1060,14 +1059,14 @@ const App = () => {
           </div>
         )}
 
-        {/* ── CLEAN TAB ────────────────────────────────────────────── */}
+        {/*  CLEAN TAB  */}
         {data && activeTab==='clean' && (
           <div className="space-y-5 pb-20">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <p className="text-xs text-slate-500">Edit, clean, and format your data. Local edits export to CSV; backend actions update the server session.</p>
-                {localRows && <span className="text-[10px] text-violet-400 font-medium mt-1 block">✦ Unsaved local edits active</span>}
+                {localRows && <span className="text-[10px] text-violet-400 font-medium mt-1 block"> Unsaved local edits active</span>}
               </div>
               <div className="flex gap-2 flex-wrap">
                 {localRows && (
@@ -1378,7 +1377,7 @@ const App = () => {
           </div>
         )}
 
-        {/* ── HISTORY TAB ──────────────────────────────────────────── */}
+        {/*  HISTORY TAB  */}
         {activeTab==='history' && (
           <div className="space-y-5 pb-20">
             <div className="flex items-center justify-between">
