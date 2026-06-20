@@ -518,8 +518,8 @@ const App = () => {
   );
 
   /*  Table Editor helpers (stable references via useCallback)  */
-  const editRows = localRows || data?.preview || [];
-  const editCols = data?.summary?.columns || [];
+ const editRows = useMemo(() => localRows || data?.preview || [], [localRows, data?.preview]);
+const editCols = useMemo(() => data?.summary?.columns || [], [data?.summary?.columns]);
 
   const toggleRow      = useCallback((i) => setSelectedRows(prev => { const n=new Set(prev); n.has(i)?n.delete(i):n.add(i); return n; }), []);
   const toggleAllRows  = useCallback(() => setSelectedRows(prev => prev.size===editRows.length&&editRows.length>0 ? new Set() : new Set(editRows.map((_,i)=>i))), [editRows]);
