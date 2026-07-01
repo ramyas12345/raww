@@ -66,7 +66,7 @@ const CHART_TYPES = [
 const COLORS = ['#334EAC','#E67E22','#27AE60','#E74C3C','#8E44AD','#16A085','#D35400','#2980B9','#C0392B','#1ABC9C'];
 const ACCEPTED_TYPES = '.csv,.xlsx,.xls,.json,.tsv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.pdf';
 
-const RawwMark = () => null;
+// RawwMark removed — text-only logo used throughout
 
 const HeatmapCell = ({ value }) => {
   const abs = Math.abs(value), isPos = value >= 0, isDiag = value === 1;
@@ -211,7 +211,7 @@ const App = () => {
   const [confirmDropRows, setConfirmDropRows] = useState(false);
   const [localRows, setLocalRows]           = useState(null);
   const [droppingCol, setDroppingCol]       = useState(null);
-  const [savedMsg, setSavedMsg]             = useState(null);
+  const [savedMsg]                             = useState(null);
   const cleanMsgTimer = useRef(null);
   const dashboardRef  = useRef(null);
 
@@ -238,10 +238,10 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const onPaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.kind==='file') { const f=item.getAsFile(); if(f){processFile(f);break;} } } };
+    const onPaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.kind==='file') { const f=item.getAsFile(); if(f){processFile(f);break;} } } }; // eslint-disable-line react-hooks/exhaustive-deps
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const solveRegression = async (x, y) => {
     if (!x||!y) return;
@@ -277,7 +277,7 @@ const App = () => {
   const handleFileUpload = async (e) => { for (const f of Array.from(e.target.files||[])) await processFile(f); };
   const handleDragOver  = useCallback((e) => { e.preventDefault(); setIsDragOver(true); }, []);
   const handleDragLeave = useCallback(() => setIsDragOver(false), []);
-  const handleDrop      = useCallback((e) => { e.preventDefault(); setIsDragOver(false); Array.from(e.dataTransfer.files).forEach(f=>processFile(f)); }, []);
+  const handleDrop      = useCallback((e) => { e.preventDefault(); setIsDragOver(false); Array.from(e.dataTransfer.files).forEach(f=>processFile(f)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const reloadEntry = (entry) => { setData(entry.snapshot); setLocalRows(null); setSelectedRows(new Set()); setActiveTab('overview'); setActiveFeature('insights'); setIsWelcomed(true); setPage(0); };
   const deleteEntry = (id) => setUploadHistory(prev=>prev.filter(e=>e.id!==id));
