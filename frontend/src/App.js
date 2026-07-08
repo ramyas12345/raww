@@ -66,7 +66,7 @@ const CHART_TYPES = [
 const COLORS = ['#334EAC','#E67E22','#27AE60','#E74C3C','#8E44AD','#16A085','#D35400','#2980B9','#C0392B','#1ABC9C'];
 const ACCEPTED_TYPES = '.csv,.xlsx,.xls,.json,.tsv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.pdf';
 
-// RawwMark removed — text-only logo used throughout
+const RawwMark = () => null;
 
 const HeatmapCell = ({ value }) => {
   const abs = Math.abs(value), isPos = value >= 0, isDiag = value === 1;
@@ -211,7 +211,7 @@ const App = () => {
   const [confirmDropRows, setConfirmDropRows] = useState(false);
   const [localRows, setLocalRows]           = useState(null);
   const [droppingCol, setDroppingCol]       = useState(null);
-  const [savedMsg]                             = useState(null);
+  const [savedMsg, setSavedMsg]             = useState(null);
   const cleanMsgTimer = useRef(null);
   const dashboardRef  = useRef(null);
 
@@ -238,10 +238,10 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const onPaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.kind==='file') { const f=item.getAsFile(); if(f){processFile(f);break;} } } }; // eslint-disable-line react-hooks/exhaustive-deps
+    const onPaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.kind==='file') { const f=item.getAsFile(); if(f){processFile(f);break;} } } };
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const solveRegression = async (x, y) => {
     if (!x||!y) return;
@@ -277,7 +277,7 @@ const App = () => {
   const handleFileUpload = async (e) => { for (const f of Array.from(e.target.files||[])) await processFile(f); };
   const handleDragOver  = useCallback((e) => { e.preventDefault(); setIsDragOver(true); }, []);
   const handleDragLeave = useCallback(() => setIsDragOver(false), []);
-  const handleDrop      = useCallback((e) => { e.preventDefault(); setIsDragOver(false); Array.from(e.dataTransfer.files).forEach(f=>processFile(f)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const handleDrop      = useCallback((e) => { e.preventDefault(); setIsDragOver(false); Array.from(e.dataTransfer.files).forEach(f=>processFile(f)); }, []);
 
   const reloadEntry = (entry) => { setData(entry.snapshot); setLocalRows(null); setSelectedRows(new Set()); setActiveTab('overview'); setActiveFeature('insights'); setIsWelcomed(true); setPage(0); };
   const deleteEntry = (id) => setUploadHistory(prev=>prev.filter(e=>e.id!==id));
@@ -364,7 +364,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
 <div class="sec"><div class="st">Column Statistics</div>
 <table><thead><tr><th>#</th><th>Column</th><th>Type</th><th>Mean</th><th>Median</th><th>Min</th><th>Max</th><th>Std Dev</th><th>Missing</th></tr></thead>
 <tbody>${s.columns?.map((col,idx)=>{const st=cs[col],miss=mi[col],type=s.types?.[col];return`<tr><td style="color:#7096D1;font-weight:600">${idx+1}</td><td><strong>${col}</strong></td><td><span class="${type==='Numeric'?'bn':'bc'}">${type}</span></td><td>${st?.mean??'—'}</td><td>${st?.median??'—'}</td><td>${st?.min??'—'}</td><td>${st?.max??'—'}</td><td>${st?.std??'—'}</td><td style="color:${miss?.pct>20?'#C0392B':'#334EAC'}">${miss?miss.pct+'%':'0%'}</td></tr>`;}).join('')}</tbody></table></div>
-<div class="foot"><div><strong>RAWW</strong> — Your Data Interpreter</div><div>raww121.vercel.app · ${new Date().toISOString().split('T')[0]}</div></div>
+<div class="foot"><div><strong>RAWW</strong> — Your Data Interpreter</div><div>raww.site · ${new Date().toISOString().split('T')[0]}</div></div>
 </div></body></html>`;
       const win=window.open(URL.createObjectURL(new Blob([html],{type:'text/html'})),'_blank');
       if(win) win.onload=()=>setTimeout(()=>win.print(),800);
@@ -694,7 +694,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
       <footer style={{background:'#0d1f4a',borderTop:'1px solid rgba(255,255,255,0.06)',padding:'22px 48px',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:'12px',flexWrap:'wrap'}}>
         <div className="flex items-center gap-3"><span style={{fontSize:'13px',fontWeight:700,color:'rgba(255,255,255,0.45)',letterSpacing:'-0.2px'}}>RAWW</span><span style={{fontSize:'12px',fontWeight:400,color:'rgba(255,255,255,0.35)'}}>— Your Data Interpreter</span></div>
         <p style={{fontSize:'10px',color:'rgba(255,255,255,0.18)'}}>No data is stored. Files are processed in-session only.</p>
-        <p style={{fontSize:'10px',color:'rgba(255,255,255,0.18)'}}>raww121.vercel.app</p>
+        <p style={{fontSize:'10px',color:'rgba(255,255,255,0.18)'}}>raww.site</p>
       </footer>
     </div>
   );
