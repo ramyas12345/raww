@@ -364,7 +364,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
 <div class="sec"><div class="st">Column Statistics</div>
 <table><thead><tr><th>#</th><th>Column</th><th>Type</th><th>Mean</th><th>Median</th><th>Min</th><th>Max</th><th>Std Dev</th><th>Missing</th></tr></thead>
 <tbody>${s.columns?.map((col,idx)=>{const st=cs[col],miss=mi[col],type=s.types?.[col];return`<tr><td style="color:#7096D1;font-weight:600">${idx+1}</td><td><strong>${col}</strong></td><td><span class="${type==='Numeric'?'bn':'bc'}">${type}</span></td><td>${st?.mean??'—'}</td><td>${st?.median??'—'}</td><td>${st?.min??'—'}</td><td>${st?.max??'—'}</td><td>${st?.std??'—'}</td><td style="color:${miss?.pct>20?'#C0392B':'#334EAC'}">${miss?miss.pct+'%':'0%'}</td></tr>`;}).join('')}</tbody></table></div>
-<div class="foot"><div><strong>RAWW</strong> — Your Data Interpreter</div><div>raww121.vercel.app · ${new Date().toISOString().split('T')[0]}</div></div>
+<div class="foot"><div><strong>RAWW</strong> — Your Data Interpreter</div><div>raww.site · ${new Date().toISOString().split('T')[0]}</div></div>
 </div></body></html>`;
       const win=window.open(URL.createObjectURL(new Blob([html],{type:'text/html'})),'_blank');
       if(win) win.onload=()=>setTimeout(()=>win.print(),800);
@@ -694,7 +694,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
       <footer style={{background:'#0d1f4a',borderTop:'1px solid rgba(255,255,255,0.06)',padding:'22px 48px',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:'12px',flexWrap:'wrap'}}>
         <div className="flex items-center gap-3"><span style={{fontSize:'13px',fontWeight:700,color:'rgba(255,255,255,0.45)',letterSpacing:'-0.2px'}}>RAWW</span><span style={{fontSize:'12px',fontWeight:400,color:'rgba(255,255,255,0.35)'}}>— Your Data Interpreter</span></div>
         <p style={{fontSize:'10px',color:'rgba(255,255,255,0.18)'}}>No data is stored. Files are processed in-session only.</p>
-        <p style={{fontSize:'10px',color:'rgba(255,255,255,0.18)'}}>raww121.vercel.app</p>
+        <p style={{fontSize:'10px',color:'rgba(255,255,255,0.18)'}}>raww.site</p>
       </footer>
     </div>
   );
