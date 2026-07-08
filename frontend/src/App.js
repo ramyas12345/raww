@@ -66,8 +66,6 @@ const CHART_TYPES = [
 const COLORS = ['#334EAC','#E67E22','#27AE60','#E74C3C','#8E44AD','#16A085','#D35400','#2980B9','#C0392B','#1ABC9C'];
 const ACCEPTED_TYPES = '.csv,.xlsx,.xls,.json,.tsv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.pdf';
 
-const RawwMark = () => null;
-
 const HeatmapCell = ({ value }) => {
   const abs = Math.abs(value), isPos = value >= 0, isDiag = value === 1;
   const bg = isDiag ? '#081F5C' : isPos ? `rgba(51,78,172,${0.12 + abs * 0.78})` : `rgba(160,64,64,${0.12 + abs * 0.78})`;
@@ -211,7 +209,7 @@ const App = () => {
   const [confirmDropRows, setConfirmDropRows] = useState(false);
   const [localRows, setLocalRows]           = useState(null);
   const [droppingCol, setDroppingCol]       = useState(null);
-  const [savedMsg, setSavedMsg]             = useState(null);
+  const [savedMsg]                          = useState(null);
   const cleanMsgTimer = useRef(null);
   const dashboardRef  = useRef(null);
 
@@ -237,12 +235,6 @@ const App = () => {
     cleanMsgTimer.current = setTimeout(() => setCleanMsg(null), ms);
   }, []);
 
-  useEffect(() => {
-    const onPaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.kind==='file') { const f=item.getAsFile(); if(f){processFile(f);break;} } } };
-    window.addEventListener('paste', onPaste);
-    return () => window.removeEventListener('paste', onPaste);
-  }, []);
-
   const solveRegression = async (x, y) => {
     if (!x||!y) return;
     try {
@@ -254,7 +246,7 @@ const App = () => {
     } catch { setRegressionResult({status:'error',message:'Backend Unreachable'}); }
   };
 
-  const processFile = async (file) => {
+  const processFile = useCallback(async (file) => {
     if (!file) return;
     setIsProcessing(true);
     const formData = new FormData();
@@ -272,12 +264,18 @@ const App = () => {
       } else { alert('Upload Error: '+(result.message||'Unknown error')); }
     } catch { alert('Could not connect to the backend.'); }
     finally { setIsProcessing(false); }
-  };
+  }, [userName, persistProfile]);
+
+  useEffect(() => {
+    const onPaste = (e) => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.kind==='file') { const f=item.getAsFile(); if(f){processFile(f);break;} } } };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [processFile]);
 
   const handleFileUpload = async (e) => { for (const f of Array.from(e.target.files||[])) await processFile(f); };
   const handleDragOver  = useCallback((e) => { e.preventDefault(); setIsDragOver(true); }, []);
   const handleDragLeave = useCallback(() => setIsDragOver(false), []);
-  const handleDrop      = useCallback((e) => { e.preventDefault(); setIsDragOver(false); Array.from(e.dataTransfer.files).forEach(f=>processFile(f)); }, []);
+  const handleDrop      = useCallback((e) => { e.preventDefault(); setIsDragOver(false); Array.from(e.dataTransfer.files).forEach(f=>processFile(f)); }, [processFile]);
 
   const reloadEntry = (entry) => { setData(entry.snapshot); setLocalRows(null); setSelectedRows(new Set()); setActiveTab('overview'); setActiveFeature('insights'); setIsWelcomed(true); setPage(0); };
   const deleteEntry = (id) => setUploadHistory(prev=>prev.filter(e=>e.id!==id));
@@ -734,7 +732,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
             <div className="space-y-2">
               {uploadHistory.slice(0,3).map(e=>(
                 <button key={e.id} onClick={()=>reloadEntry(e)} className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all" style={{background:'#fff',border:'1px solid #C8D8F0',cursor:'pointer'}} onMouseEnter={ev=>ev.currentTarget.style.borderColor='#081F5C'} onMouseLeave={ev=>ev.currentTarget.style.borderColor='#C8D8F0'}>
-                  <div className="flex items-center gap-3 truncate"><FileText size={12} style={{color:'#7096D1',flexShrink:0}}/><span style={{fontSize:'12px',fontWeight:500,color:'#081F5C'}} className="truncate">{e.name}</span></div>
+                  <div className="flex items-center gap-3 truncate"><FileText size={12} style={{color:'#7096D1',flexShrink:0}}/><span style={{fontSize:'12px',fontWeight:500,color:'#081F5C'}}>{e.name}</span></div>
                   <span style={{fontSize:'11px',marginLeft:'8px',flexShrink:0,color:'#7096D1'}}>{e.rows} rows</span>
                 </button>
               ))}
