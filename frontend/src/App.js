@@ -137,7 +137,7 @@ const HeatmapCell = ({ value }) => {
 };
 
 /* Help Card */
-const HelpCard = ({ onClose, title, sections }) => (
+const HelpCard = ({ onClose, title, sections, T }) => (
   <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
     <div className="absolute inset-0 backdrop-blur-sm" style={{background:'rgba(26,25,22,0.4)'}} onClick={onClose} />
     <div className="card-in relative z-10 w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden"
@@ -1196,8 +1196,7 @@ ${Object.keys(mi).length===0?'<p class="para">No missing values detected in this
     <div className="h-[100dvh] flex flex-col md:flex-row overflow-hidden" style={{background:T.bg, color:T.textPrimary}} ref={dashboardRef}>
       <style>{globalStyles}</style>
 
-      {helpCard && <HelpCard onClose={closeHelp} title={helpCard.title} sections={helpCard.sections}/>}
-
+      {helpCard && <HelpCard onClose={closeHelp} title={helpCard.title} sections={helpCard.sections} T={T}/>}
       {confirmDrop && (
         <InlineConfirm
           message={`Drop column "${confirmDrop.col}"? This removes it from the backend session. Re-upload to restore it.`}
