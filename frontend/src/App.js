@@ -287,6 +287,47 @@ const App = () => {
   const [vizWarning, setVizWarning]         = useState(null);
   const [darkMode, setDarkMode]             = useState(() => { try { return localStorage.getItem('raww_dark')==='1'; } catch { return false; } });
 
+   // ── Theme tokens (light / dark) ─────────────────────────────────────────
+  const T = darkMode ? {
+    bg:        '#0F1623',
+    surface:   '#1A2236',
+    surfaceAlt:'#222E45',
+    border:    '#2A3A58',
+    borderStrong:'#3A5080',
+    textPrimary:'#E8EEFF',
+    textSecondary:'#8BAAD4',
+    textMuted:  '#4A6490',
+    accent:     '#5B7FE8',
+    accentDark: '#3A5CC8',
+    navy:       '#3A5CC8',
+    navyText:   '#fff',
+    danger:     '#E05555',
+    success:    '#4A9E6F',
+    warn:       '#C8A832',
+    gridColor:  '#1E2D45',
+    tooltipBg:  '#1A2236',
+    chip:       '#1E2D45',
+  } : {
+    bg:         '#EEF2F7',
+    surface:    '#FFFFFF',
+    surfaceAlt: '#EDF1F6',
+    border:     '#C8D8F0',
+    borderStrong:'#7096D1',
+    textPrimary:'#081F5C',
+    textSecondary:'#334EAC',
+    textMuted:  '#7096D1',
+    accent:     '#334EAC',
+    accentDark: '#1e326b',
+    navy:       '#1e326b',
+    navyText:   '#fff',
+    danger:     '#C0392B',
+    success:    '#2E7D32',
+    warn:       '#8B6914',
+    gridColor:  '#C8D8F0',
+    tooltipBg:  '#fff',
+    chip:       '#EDF1F6',
+  };
+  
   // ── localStorage persistence ──────────────────────────────────────────────
   useEffect(() => {
     try {
@@ -743,46 +784,6 @@ ${Object.keys(mi).length===0?'<p class="para">No missing values detected in this
     return null;
   }, []);
 
-  // ── Theme tokens (light / dark) ─────────────────────────────────────────
-  const T = darkMode ? {
-    bg:        '#0F1623',
-    surface:   '#1A2236',
-    surfaceAlt:'#222E45',
-    border:    '#2A3A58',
-    borderStrong:'#3A5080',
-    textPrimary:'#E8EEFF',
-    textSecondary:'#8BAAD4',
-    textMuted:  '#4A6490',
-    accent:     '#5B7FE8',
-    accentDark: '#3A5CC8',
-    navy:       '#3A5CC8',
-    navyText:   '#fff',
-    danger:     '#E05555',
-    success:    '#4A9E6F',
-    warn:       '#C8A832',
-    gridColor:  '#1E2D45',
-    tooltipBg:  '#1A2236',
-    chip:       '#1E2D45',
-  } : {
-    bg:         '#EEF2F7',
-    surface:    '#FFFFFF',
-    surfaceAlt: '#EDF1F6',
-    border:     '#C8D8F0',
-    borderStrong:'#7096D1',
-    textPrimary:'#081F5C',
-    textSecondary:'#334EAC',
-    textMuted:  '#7096D1',
-    accent:     '#334EAC',
-    accentDark: '#1e326b',
-    navy:       '#1e326b',
-    navyText:   '#fff',
-    danger:     '#C0392B',
-    success:    '#2E7D32',
-    warn:       '#8B6914',
-    gridColor:  '#C8D8F0',
-    tooltipBg:  '#fff',
-    chip:       '#EDF1F6',
-  };
 
   const TAB_HEADINGS = { overview:'Dashboard', regression:'Regression', visuals:'Visualise', clean:'Data Cleaning', history:'History' };
 
@@ -1279,14 +1280,14 @@ ${Object.keys(mi).length===0?'<p class="para">No missing values detected in this
             style={{background:T.surfaceAlt, color:T.textMuted}}
             onMouseEnter={e=>{e.currentTarget.style.color=T.textSecondary;}}
             onMouseLeave={e=>{e.currentTarget.style.color=T.textMuted;}}>
-            {darkMode ? '☀️' : '🌙'}
+            {darkMode ? '☀︎' : '☾'}
           </button>
         </div>
         {/* Mobile dark toggle */}
         <button onClick={toggleDark} title="Toggle dark mode"
           className="md:hidden p-2.5 rounded-lg text-base"
           style={{color:T.textMuted}}>
-          {darkMode ? '☀️' : '🌙'}
+          {darkMode ? '☀︎' : '☾'}
         </button>
       </nav>
 
