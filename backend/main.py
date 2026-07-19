@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import io
 
@@ -15,9 +15,32 @@ app.add_middleware(
 
 state = {"df": None}
 
+# ── Security constants ─────────────────────────────────────────────────────────
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024          # 10 MB hard limit
+ALLOWED_EXTENSIONS  = {'csv','xlsx','xls','json','tsv','jpg','jpeg','png','webp','pdf'}
+MAX_ROWS_PREVIEW    = 100
+MAX_ROWS_ANALYSIS   = 500_000                    # refuse absurdly large datasets
+
+
+def validate_file(filename: str, size: int):
+    """Raise HTTPException for bad file type or size."""
+    ext = filename.lower().rsplit('.', 1)[-1] if '.' in filename else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f'File type ".{ext}" is not allowed. '
+                   f'Accepted: {", ".join(sorted(ALLOWED_EXTENSIONS)).upper()}'
+        )
+    if size > MAX_FILE_SIZE_BYTES:
+        mb = size / (1024 * 1024)
+        raise HTTPException(
+            status_code=413,
+            detail=f'File too large ({mb:.1f} MB). Maximum allowed size is 10 MB.'
+        )
+
 
 def read_file(contents: bytes, filename: str) -> pd.DataFrame:
-    ext = filename.lower().split('.')[-1]
+    ext = filename.lower().rsplit('.', 1)[-1]
     if ext == 'csv':
         try:
             return pd.read_csv(io.BytesIO(contents))
@@ -32,8 +55,10 @@ def read_file(contents: bytes, filename: str) -> pd.DataFrame:
             return pd.json_normalize(pd.read_json(io.BytesIO(contents), typ='series').tolist())
     elif ext == 'tsv':
         return pd.read_csv(io.BytesIO(contents), sep='\t')
+    elif ext in ['jpg', 'jpeg', 'png', 'webp']:
+        # Return a simple 1-row DataFrame acknowledging the image upload
+        return pd.DataFrame([{"file": filename, "type": "image", "size_bytes": len(contents)}])
     else:
-        # fallback: try csv
         return pd.read_csv(io.BytesIO(contents))
 
 
@@ -41,7 +66,20 @@ def read_file(contents: bytes, filename: str) -> pd.DataFrame:
 async def upload_file(file: UploadFile = File(...)):
     try:
         contents = await file.read()
+
+        # ── Backend-enforced guardrails (cannot be bypassed via curl) ──────────
+        validate_file(file.filename, len(contents))
+
         df = read_file(contents, file.filename)
+
+        # Refuse absurdly large datasets that would OOM the server
+        if len(df) > MAX_ROWS_ANALYSIS:
+            return {
+                "status": "error",
+                "message": f"Dataset has {len(df):,} rows — maximum supported is {MAX_ROWS_ANALYSIS:,}. "
+                           f"Please sample or filter your data before uploading."
+            }
+
         state["df"] = df
 
         if len(df) < 5:
@@ -58,7 +96,7 @@ async def upload_file(file: UploadFile = File(...)):
         if len(numeric_cols) == 0:
             return {"status": "error", "message": "No numeric data detected in this dataset"}
 
-        preview = df.head(100).replace({np.nan: None}).to_dict(orient="records")
+        preview = df.head(MAX_ROWS_PREVIEW).replace({np.nan: None}).to_dict(orient="records")
 
         # ── Missing values analysis ────────────────────────────────────────────
         missing_info = {}
@@ -98,7 +136,6 @@ async def upload_file(file: UploadFile = File(...)):
 
         # ── Insight report ────────────────────────────────────────────────────
         insights = []
-
         insights.append(f"Dataset contains {len(df)} rows and {len(columns)} columns "
                         f"({len(numeric_cols)} numeric, {len(columns) - len(numeric_cols)} categorical).")
 
@@ -211,10 +248,12 @@ async def upload_file(file: UploadFile = File(...)):
                 "thresholds":       thresholds,
                 "missing_info":     missing_info,
                 "duplicate_count":  duplicate_count,
-                "file_type":        file.filename.split('.')[-1].upper(),
+                "file_type":        file.filename.rsplit('.', 1)[-1].upper(),
             }
         }
 
+    except HTTPException:
+        raise                                    # re-raise our own 400/413 errors
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -231,14 +270,21 @@ async def clean_data(action: str, column: str = None, fill_value: str = None):
             state["df"] = df
             return {"status": "success", "message": f"Removed {before - len(df)} duplicate rows", "rows": len(df)}
         elif action == "fill_missing" and column:
+            # Validate column exists before using it
+            if column not in df.columns:
+                return {"status": "error", "message": f"Column '{column}' not found"}
             if pd.api.types.is_numeric_dtype(df[column]):
-                val = df[column].mean() if fill_value == "mean" else df[column].median() if fill_value == "median" else float(fill_value)
+                val = (df[column].mean() if fill_value == "mean"
+                       else df[column].median() if fill_value == "median"
+                       else float(fill_value))
                 df[column] = df[column].fillna(val)
             else:
                 df[column] = df[column].fillna(fill_value or "Unknown")
             state["df"] = df
             return {"status": "success", "message": f"Filled missing values in '{column}'"}
         elif action == "drop_column" and column:
+            if column not in df.columns:
+                return {"status": "error", "message": f"Column '{column}' not found"}
             df = df.drop(columns=[column])
             state["df"] = df
             return {"status": "success", "message": f"Dropped column '{column}'"}
@@ -252,9 +298,13 @@ async def clean_data(action: str, column: str = None, fill_value: str = None):
 async def calculate_regression(x_col: str, y_col: str):
     if state["df"] is None:
         return {"status": "error", "message": "No data loaded. Upload a dataset first."}
-
     try:
         df_work = state["df"].copy()
+        # Validate columns exist
+        for col in [x_col, y_col]:
+            if col not in df_work.columns:
+                return {"status": "error", "message": f"Column '{col}' not found in dataset"}
+
         df_work[x_col] = pd.to_numeric(df_work[x_col], errors="coerce")
         df_work[y_col] = pd.to_numeric(df_work[y_col], errors="coerce")
         df_work = df_work[[x_col, y_col]].dropna()
@@ -285,18 +335,17 @@ async def calculate_regression(x_col: str, y_col: str):
         x_min, x_max = float(x.min()), float(x.max())
 
         return {
-            "status":   "success",
-            "equation": f"y = {round(m, 4)}x + {round(b, 4)}",
-            "slope":    round(float(m), 4),
-            "intercept":round(float(b), 4),
-            "r":        round(r, 4),
-            "r2":       r2,
-            "insight":  insight,
-            "points":   points,
-            "line":     [{"x": x_min, "y": float(m * x_min + b)},
-                         {"x": x_max, "y": float(m * x_max + b)}]
+            "status":    "success",
+            "equation":  f"y = {round(m, 4)}x + {round(b, 4)}",
+            "slope":     round(float(m), 4),
+            "intercept": round(float(b), 4),
+            "r":         round(r, 4),
+            "r2":        r2,
+            "insight":   insight,
+            "points":    points,
+            "line":      [{"x": x_min, "y": float(m * x_min + b)},
+                          {"x": x_max, "y": float(m * x_max + b)}]
         }
-
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -306,24 +355,27 @@ async def full_correlation(col_a: str, col_b: str):
     if state["df"] is None:
         return {"status": "error", "message": "No data loaded"}
     try:
+        for col in [col_a, col_b]:
+            if col not in state["df"].columns:
+                return {"status": "error", "message": f"Column '{col}' not found"}
         df_work = state["df"][[col_a, col_b]].dropna()
         df_work = df_work.apply(pd.to_numeric, errors="coerce").dropna()
         if len(df_work) < 3:
             return {"status": "error", "message": "Not enough data"}
         r = float(df_work.corr().iloc[0, 1])
         strength = (
-            "strong"   if abs(r) >= 0.7 else
-            "moderate" if abs(r) >= 0.4 else
-            "weak"     if abs(r) >= 0.2 else
+            "strong"      if abs(r) >= 0.7 else
+            "moderate"    if abs(r) >= 0.4 else
+            "weak"        if abs(r) >= 0.2 else
             "negligible"
         )
         direction = "positive" if r > 0 else "negative"
         return {
-            "status":        "success",
-            "r":             round(r, 4),
-            "strength":      strength,
-            "direction":     direction,
-            "interpretation": f"{strength.capitalize()} {direction} correlation (r = {round(r, 4)})"
+            "status":          "success",
+            "r":               round(r, 4),
+            "strength":        strength,
+            "direction":       direction,
+            "interpretation":  f"{strength.capitalize()} {direction} correlation (r = {round(r, 4)})"
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
