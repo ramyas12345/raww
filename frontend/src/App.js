@@ -35,13 +35,13 @@ const globalStyles = `
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #B0C4E4; border-radius: 99px; }
 
-  select option { background-color: #fff !important; color: #081F5C !important; }
+  select option { background-color: #716969 !important; color: #081F5C !important; }
 
   @keyframes pulse-border { 0%,100% { border-color: rgba(160,64,64,0.4); } 50% { border-color: rgba(160,64,64,0.1); } }
   .glow-cell { animation: pulse-border 2s infinite; }
 
   @keyframes col-drop-flash {
-    0% { background: #C0392B; color: #fff; transform: scale(1); }
+    0% { background: #C0392B; color: #716969; transform: scale(1); }
     30% { background: #ff6b6b; transform: scale(0.96); }
     60% { background: #C0392B; opacity: 0.5; }
     100% { background: #C0392B; opacity: 0; transform: scale(0.9); }
@@ -67,12 +67,15 @@ const COLORS = ['#334EAC','#E67E22','#27AE60','#E74C3C','#8E44AD','#16A085','#D3
 const ACCEPTED_TYPES = '.csv,.xlsx,.xls,.json,.tsv,.jpg,.jpeg,.png,.webp,.pdf';
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-const HeatmapCell = ({ value }) => {
+const HeatmapCell = ({ value, dark }) => {
   const abs = Math.abs(value), isPos = value >= 0, isDiag = value === 1;
-  const bg = isDiag ? '#081F5C' : isPos ? `rgba(51,78,172,${0.12 + abs * 0.78})` : `rgba(160,64,64,${0.12 + abs * 0.78})`;
-  const textColor = isDiag ? '#fff' : abs > 0.35 ? '#fff' : '#081F5C';
+  const posRgb = dark ? '91,127,232' : '51,78,172';
+  const negRgb = dark ? '224,100,100' : '160,64,64';
+  const minOp = dark ? 0.22 : 0.12;
+  const bg = isDiag ? (dark ? '#3A5CC8' : '#081F5C') : `rgba(${isPos ? posRgb : negRgb},${minOp + abs * 0.72})`;
+  const textColor = isDiag ? '#716969' : dark ? (abs > 0.15 ? '#716969' : '#94acd0') : (abs > 0.35 ? '#716969' : '#081F5C');
   return (
-    <div style={{ background: bg, color: textColor, borderRadius: 5, padding: '6px 3px', fontSize: 10, textAlign: 'center', fontWeight: 600, minWidth: 52, minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: isDiag ? 'none' : '1px solid rgba(0,0,0,0.06)' }}>
+    <div style={{ background: bg, color: textColor, borderRadius: 5, padding: '6px 3px', fontSize: 10, textAlign: 'center', fontWeight: 600, minWidth: 52, minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: isDiag ? 'none' : (dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)') }}>
       {value.toFixed(2)}
     </div>
   );
@@ -102,7 +105,7 @@ const HelpCard = ({ onClose, title, sections, T }) => (
         ))}
       </div>
       <div className="px-6 md:px-8 pb-6 pt-2">
-        <button onClick={onClose} style={{width:'100%', fontSize:'12px', fontWeight:500, padding:'10px', borderRadius:'10px', background:T.textPrimary, color:T.surface, border:'none', cursor:'pointer'}}>Got it</button>
+        <button onClick={onClose} style={{width:'100%', fontSize:'12px', fontWeight:500, padding:'10px', borderRadius:'10px', background:T.navy, color:'#716969', border:'none', cursor:'pointer'}}>Got it</button>
       </div>
     </div>
   </div>
@@ -229,10 +232,10 @@ const App = () => {
     navy:       '#3A5CC8',
     chip:       '#1E2D45',
   } : {
-    bg:         '#EEF2F7',
-    surface:    '#FFFFFF',
-    surfaceAlt: '#EDF1F6',
-    border:     '#C8D8F0',
+    bg:         '#7f8790',
+    surface:    '#716969',
+    surfaceAlt: '#70777f',
+    border:     '#94acd0',
     borderStrong:'#7096D1',
     textPrimary:'#081F5C',
     textSecondary:'#334EAC',
@@ -370,32 +373,32 @@ const App = () => {
 body{background:#EEF2F7;color:#081F5C}
 .page{max-width:900px;margin:0 auto;padding:48px}
 .cover{background:#1e326b;padding:48px;border-radius:0 0 20px 20px;margin-bottom:36px}
-.logo{font-size:32px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.logo{font-size:32px;font-weight:700;color:#716969;letter-spacing:-0.5px}
 .sub{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:3px;margin-top:4px}
 .meta{font-size:12px;color:rgba(255,255,255,0.55);margin-top:16px}
-.analyst{display:inline-block;background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:20px;font-size:11px;color:#fff;font-weight:500;margin-top:6px}
+.analyst{display:inline-block;background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:20px;font-size:11px;color:#716969;font-weight:500;margin-top:6px}
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
-.kpi{background:#fff;border:1px solid #C8D8F0;border-radius:10px;padding:18px}
+.kpi{background:#716969;border:1px solid #94acd0;border-radius:10px;padding:18px}
 .kpi-l{font-size:9px;color:#7096D1;text-transform:uppercase;font-weight:600;letter-spacing:2px;margin-bottom:4px}
 .kpi-v{font-size:26px;font-weight:700;color:#081F5C;line-height:1}
 .kpi-s{font-size:10px;color:#7096D1;margin-top:2px}
 .sec{margin-bottom:36px}
-.st{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#7096D1;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #C8D8F0}
-.card{background:#fff;border:1px solid #C8D8F0;border-radius:10px;padding:14px;margin-bottom:10px}
+.st{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#7096D1;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #94acd0}
+.card{background:#716969;border:1px solid #94acd0;border-radius:10px;padding:14px;margin-bottom:10px}
 .cl{font-size:9px;color:#7096D1;text-transform:uppercase;font-weight:600;letter-spacing:1px}
 .cv{font-size:20px;font-weight:700;color:#081F5C;margin-top:3px}
 .mono{font-family:monospace;font-size:13px;font-weight:600;color:#1e326b;margin-top:4px}
-.ins{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #C8D8F0}
+.ins{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #94acd0}
 .in{font-size:10px;font-weight:600;color:#7096D1;min-width:24px}
 .it{font-size:12px;color:#2D3E8A;line-height:1.6}
 table{width:100%;border-collapse:collapse;font-size:11px}
 th{background:#1e326b;padding:9px 13px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.6);font-weight:600}
 tr:nth-child(even) td{background:#EEF2F7}
-td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
+td{padding:9px 13px;border-bottom:1px solid #94acd0;color:#2D3E8A}
 .bn{background:#D0E3FF;color:#334EAC;padding:1px 7px;border-radius:3px;font-size:9px;font-weight:600}
-.bc{background:#EDF1F6;color:#334EAC;padding:1px 7px;border-radius:3px;font-size:9px;font-weight:600}
-.foot{margin-top:48px;padding-top:16px;border-top:1px solid #C8D8F0;font-size:10px;color:#7096D1;display:flex;justify-content:space-between}
-@media print{body{background:#fff}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.bc{background:#70777f;color:#334EAC;padding:1px 7px;border-radius:3px;font-size:9px;font-weight:600}
+.foot{margin-top:48px;padding-top:16px;border-top:1px solid #94acd0;font-size:10px;color:#7096D1;display:flex;justify-content:space-between}
+@media print{body{background:#716969}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body><div class="page">
 <div class="cover"><div class="logo">RAWW</div><div class="sub">Data Analysis Report</div><div class="meta">Generated ${new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div><div class="analyst">Analyst: ${userName||'Anonymous'}</div></div>
 <div class="kpi-row">
@@ -583,8 +586,8 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
       style={{border:`1.5px dashed ${isDragOver?T.accent:T.borderStrong}`,background:isDragOver?'rgba(51,78,172,0.02)':'transparent'}}
       onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
       <div className="flex flex-col items-center gap-4 text-center">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105" style={{background:T.textPrimary}}>
-          {isProcessing?<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>:<Upload size={17} style={{color:T.surface}}/>}
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105" style={{background:T.navy}}>
+          {isProcessing?<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>:<Upload size={17} style={{color:'#716969'}}/>}
         </div>
         <div>
           <p style={{fontWeight:500,fontSize:'13px',marginBottom:'4px',color:T.textPrimary}}>{isProcessing?'Processing…':isDragOver?'Drop files here':'Upload files or drag and drop'}</p>
@@ -614,7 +617,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
               {darkMode ? <circle cx="12" cy="12" r="5"/> : <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>}
             </svg>
           </button>
-          <button onClick={()=>setIntroStage('onboard')} style={{background:T.textPrimary,color:T.surface,fontSize:'13px',fontWeight:500,padding:'8px 20px',borderRadius:'8px',border:'none',cursor:'pointer',transition:'opacity 0.15s'}} onMouseEnter={e=>e.currentTarget.style.opacity='0.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>Get started</button>
+          <button onClick={()=>setIntroStage('onboard')} style={{background:T.navy,color:'#716969',fontSize:'13px',fontWeight:500,padding:'8px 20px',borderRadius:'8px',border:'none',cursor:'pointer',transition:'opacity 0.15s'}} onMouseEnter={e=>e.currentTarget.style.opacity='0.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>Get started</button>
         </div>
       </nav>
 
@@ -636,7 +639,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
         </p>
 
         <div className="fu3 flex flex-col sm:flex-row items-start gap-3 mb-14" style={{width:'100%'}}>
-          <button onClick={()=>setIntroStage('onboard')} style={{display:'inline-flex',alignItems:'center',gap:'8px',fontWeight:500,fontSize:'13px',padding:'11px 28px',borderRadius:'10px',background:T.textPrimary,color:T.surface,border:'none',cursor:'pointer',boxShadow:'0 2px 14px rgba(8,31,92,0.16)',transition:'all 0.15s'}} onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-1px)';e.currentTarget.style.boxShadow='0 5px 20px rgba(8,31,92,0.22)';}} onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 2px 14px rgba(8,31,92,0.16)';}}>
+          <button onClick={()=>setIntroStage('onboard')} style={{display:'inline-flex',alignItems:'center',gap:'8px',fontWeight:500,fontSize:'13px',padding:'11px 28px',borderRadius:'10px',background:T.navy,color:'#716969',border:'none',cursor:'pointer',boxShadow:'0 2px 14px rgba(8,31,92,0.16)',transition:'all 0.15s'}} onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-1px)';e.currentTarget.style.boxShadow='0 5px 20px rgba(8,31,92,0.22)';}} onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 2px 14px rgba(8,31,92,0.16)';}}>
             Start analysing — it's free <ArrowRight size={14}/>
           </button>
           <button onClick={()=>document.getElementById('how')?.scrollIntoView({behavior:'smooth'})} style={{display:'inline-flex',alignItems:'center',gap:'8px',fontWeight:500,fontSize:'13px',padding:'11px 24px',borderRadius:'10px',background:T.surface,color:T.textSecondary,border:`1px solid ${T.border}`,cursor:'pointer',transition:'border-color 0.15s'}} onMouseEnter={e=>e.currentTarget.style.borderColor=T.textSecondary} onMouseLeave={e=>e.currentTarget.style.borderColor=T.border}>
@@ -734,9 +737,9 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
       <section style={{background:T.accentDark,padding:'80px 24px',textAlign:'center'}}>
         <div style={{maxWidth:'520px',margin:'0 auto'}}>
           <p style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.15em',color:'rgba(255,255,255,0.3)',marginBottom:'14px'}}>Ready to start?</p>
-          <h2 style={{fontSize:'clamp(22px,4vw,34px)',fontWeight:700,color:'#fff',letterSpacing:'-0.5px',lineHeight:1.15,marginBottom:'14px'}}>Your data is waiting<br/>to tell you something.</h2>
+          <h2 style={{fontSize:'clamp(22px,4vw,34px)',fontWeight:700,color:'#716969',letterSpacing:'-0.5px',lineHeight:1.15,marginBottom:'14px'}}>Your data is waiting<br/>to tell you something.</h2>
           <p style={{fontSize:'13px',marginBottom:'28px',color:'rgba(255,255,255,0.45)'}}>Upload your first dataset in under 10 seconds. No signup, no credit card, no code.</p>
-          <button onClick={()=>setIntroStage('onboard')} style={{display:'inline-flex',alignItems:'center',gap:'8px',fontWeight:500,fontSize:'13px',padding:'11px 30px',borderRadius:'10px',background:'#fff',color:'#081F5C',border:'none',cursor:'pointer',transition:'all 0.15s'}} onMouseEnter={e=>e.currentTarget.style.transform='translateY(-1px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>
+          <button onClick={()=>setIntroStage('onboard')} style={{display:'inline-flex',alignItems:'center',gap:'8px',fontWeight:500,fontSize:'13px',padding:'11px 30px',borderRadius:'10px',background:'#716969',color:'#081F5C',border:'none',cursor:'pointer',transition:'all 0.15s'}} onMouseEnter={e=>e.currentTarget.style.transform='translateY(-1px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>
             Analyse my data — it's free <ArrowRight size={14}/>
           </button>
           <p style={{color:'rgba(255,255,255,0.2)',fontSize:'11px',marginTop:'14px'}}>Works in Chrome, Firefox, Safari · No install required</p>
@@ -820,7 +823,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
         </div>
       )}
       {savedMsg && (
-        <div className="fixed top-16 right-4 z-[250] warn-in flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-md max-w-xs" style={{background:T.accentDark,border:`1px solid ${T.accent}`,color:'#fff'}}>
+        <div className="fixed top-16 right-4 z-[250] warn-in flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-md max-w-xs" style={{background:T.accentDark,border:`1px solid ${T.accent}`,color:'#716969'}}>
           <CheckCircle2 size={13} style={{color:'#90CAF9',flexShrink:0}}/>
           <div><p style={{fontWeight:600,fontSize:'12px',marginBottom:'2px'}}>Saved to browser</p><p style={{color:'rgba(255,255,255,0.55)',fontWeight:400,fontSize:'11px'}}>{savedMsg}</p></div>
         </div>
@@ -830,7 +833,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
       <nav className="w-full md:w-[58px] flex flex-row md:flex-col items-center justify-around md:justify-start py-3 md:py-7 md:gap-4 z-20 order-last md:order-first shrink-0" style={{background:T.surface,borderTop:`1px solid ${T.border}`}}>
         <div className="hidden md:flex mb-4 justify-center w-full"><span style={{fontSize:'13px',fontWeight:700,color:T.textPrimary,letterSpacing:'-0.2px'}}>RAWW</span></div>
         {[{id:'overview',icon:<LayoutGrid size={17}/>},{id:'regression',icon:<Microscope size={17}/>},{id:'visuals',icon:<Activity size={17}/>},{id:'clean',icon:<Eraser size={17}/>},{id:'history',icon:<History size={17}/>}].map(({id,icon})=>(
-          <button key={id} onClick={()=>setActiveTab(id)} title={TAB_HEADINGS[id]} style={{padding:'10px',borderRadius:'8px',transition:'all 0.15s',border:'none',cursor:'pointer',background:activeTab===id?T.textPrimary:'transparent',color:activeTab===id?T.surface:T.textMuted}} onMouseEnter={e=>{if(activeTab!==id)e.currentTarget.style.color=T.textSecondary;}} onMouseLeave={e=>{if(activeTab!==id)e.currentTarget.style.color=T.textMuted;}}>
+          <button key={id} onClick={()=>setActiveTab(id)} title={TAB_HEADINGS[id]} style={{padding:'10px',borderRadius:'8px',transition:'all 0.15s',border:'none',cursor:'pointer',background:activeTab===id?T.navy:'transparent',color:activeTab===id?'#716969':T.textMuted}} onMouseEnter={e=>{if(activeTab!==id)e.currentTarget.style.color=T.textSecondary;}} onMouseLeave={e=>{if(activeTab!==id)e.currentTarget.style.color=T.textMuted;}}>
             {icon}
           </button>
         ))}
@@ -862,7 +865,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
             <button onClick={exportReport} disabled={!data||isExporting} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all disabled:opacity-40" style={{fontWeight:500,fontSize:'12px',background:T.surface,border:`1px solid ${T.border}`,color:T.textSecondary,cursor:'pointer'}} onMouseEnter={e=>{if(!e.currentTarget.disabled){e.currentTarget.style.borderColor=T.textPrimary;e.currentTarget.style.color=T.textPrimary;}}} onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.textSecondary;}}>
               <Download size={13}/> {isExporting?'Preparing…':'Export Report'}
             </button>
-            <label className="flex-1 lg:flex-none cursor-pointer flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl transition-all" style={{fontWeight:500,fontSize:'12px',background:T.textPrimary,color:T.surface}} onMouseEnter={e=>e.currentTarget.style.opacity='0.85'} onMouseLeave={e=>e.currentTarget.style.opacity='1'} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+            <label className="flex-1 lg:flex-none cursor-pointer flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl transition-all" style={{fontWeight:500,fontSize:'12px',background:T.navy,color:'#716969'}} onMouseEnter={e=>e.currentTarget.style.opacity='0.85'} onMouseLeave={e=>e.currentTarget.style.opacity='1'} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
               {isProcessing?'Uploading…':'Upload New'}<input type="file" className="hidden" onChange={handleFileUpload} accept={ACCEPTED_TYPES} multiple/>
             </label>
           </div>
@@ -916,11 +919,11 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
               <p style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',color:T.textMuted,marginBottom:'12px'}}>Explore your data</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {OVERVIEW_FEATURES.map(f=>(
-                  <button key={f.id} onClick={()=>setActiveFeature(activeFeature===f.id?null:f.id)} style={{textAlign:'left',padding:'18px 20px',borderRadius:'12px',cursor:'pointer',transition:'all 0.15s',border:'none',background:activeFeature===f.id?T.textPrimary:T.surface,outline:`1px solid ${activeFeature===f.id?T.textPrimary:T.border}`}} onMouseEnter={e=>{if(activeFeature!==f.id)e.currentTarget.style.outline=`1px solid ${T.borderStrong}`;}} onMouseLeave={e=>{if(activeFeature!==f.id)e.currentTarget.style.outline=`1px solid ${T.border}`;}}>
-                    <div style={{marginBottom:'10px',opacity:activeFeature===f.id?0.6:1,color:activeFeature===f.id?T.surface:T.accent}}>{f.icon}</div>
-                    <p style={{fontSize:'12px',fontWeight:600,marginBottom:'4px',color:activeFeature===f.id?T.surface:T.textPrimary}}>{f.label}</p>
-                    <p style={{fontSize:'11px',lineHeight:'1.55',color:activeFeature===f.id?'rgba(255,255,255,0.5)':T.textMuted}}>{f.desc}</p>
-                    <div style={{marginTop:'10px',fontSize:'10px',fontWeight:500,color:activeFeature===f.id?'rgba(255,255,255,0.4)':T.textMuted}}>{activeFeature===f.id?'Collapse':'Open'}</div>
+                  <button key={f.id} onClick={()=>setActiveFeature(activeFeature===f.id?null:f.id)} style={{textAlign:'left',padding:'18px 20px',borderRadius:'12px',cursor:'pointer',transition:'all 0.15s',border:'none',background:activeFeature===f.id?T.navy:T.surface,outline:`1px solid ${activeFeature===f.id?T.navy:T.border}`}} onMouseEnter={e=>{if(activeFeature!==f.id)e.currentTarget.style.outline=`1px solid ${T.borderStrong}`;}} onMouseLeave={e=>{if(activeFeature!==f.id)e.currentTarget.style.outline=`1px solid ${T.border}`;}}>
+                    <div style={{marginBottom:'10px',opacity:activeFeature===f.id?0.6:1,color:activeFeature===f.id?'#716969':T.accent}}>{f.icon}</div>
+                    <p style={{fontSize:'12px',fontWeight:600,marginBottom:'4px',color:activeFeature===f.id?'#716969':T.textPrimary}}>{f.label}</p>
+                    <p style={{fontSize:'11px',lineHeight:'1.55',color:activeFeature===f.id?'rgba(255,255,255,0.65)':T.textMuted}}>{f.desc}</p>
+                    <div style={{marginTop:'10px',fontSize:'10px',fontWeight:500,color:activeFeature===f.id?'rgba(255,255,255,0.55)':T.textMuted}}>{activeFeature===f.id?'Collapse':'Open'}</div>
                   </button>
                 ))}
               </div>
@@ -937,7 +940,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
                 ):(
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {Object.entries(data.summary.missing_info).map(([col,info])=>(
-                      <div key={col} className="rounded-xl p-4" style={{background:T.textPrimary}}>
+                      <div key={col} className="rounded-xl p-4" style={{background:T.navy}}>
                         <p style={{fontSize:'10px',fontWeight:500,marginBottom:'8px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textTransform:'uppercase',letterSpacing:'0.05em',color:'rgba(255,255,255,0.4)'}}>{col}</p>
                         <p style={{fontSize:'22px',fontWeight:700,color:info.pct>20?'#F4A0A0':info.pct>5?'#7096D1':'#90CAF9'}}>{info.pct}%</p>
                         <p style={{fontSize:'10px',marginTop:'4px',color:'rgba(255,255,255,0.3)'}}>{info.count} missing</p>
@@ -950,19 +953,19 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
 
             {activeFeature==='correlation' && data.summary?.corr_matrix && (
               <section className="rounded-xl card-in overflow-hidden" style={{background:T.surface,border:`1.5px solid ${T.textPrimary}`}}>
-                <div className="px-6 py-4 flex items-center justify-between" style={{background:T.textPrimary}}>
-                  <h3 style={{fontSize:'13px',fontWeight:600,color:T.surface}}>Correlation Matrix</h3>
+                <div className="px-6 py-4 flex items-center justify-between" style={{background:T.navy}}>
+                  <h3 style={{fontSize:'13px',fontWeight:600,color:'#716969'}}>Correlation Matrix</h3>
                   <HelpBtn T={T} onClick={()=>openHelp('Correlation Matrix',[{heading:'What is a correlation matrix?',body:'Shows Pearson r between every pair of numeric columns. Ranges from −1 (perfect negative) to +1 (perfect positive).'}])}/>
                 </div>
                 <div className="p-6 overflow-x-auto">
                   <div style={{display:'inline-block',minWidth:'100%'}}>
                     <div style={{display:'grid',gridTemplateColumns:`90px repeat(${data.summary.corr_matrix.columns.length},1fr)`,gap:3}}>
                       <div/>
-                      {data.summary.corr_matrix.columns.map(col=><div key={col} style={{fontSize:8,color:T.textMuted,fontWeight:600,textAlign:'center',padding:'4px 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{col}</div>)}
+                      {data.summary.corr_matrix.columns.map(col=><div key={col} style={{fontSize:8,color:T.textSecondary,fontWeight:600,textAlign:'center',padding:'4px 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{col}</div>)}
                       {data.summary.corr_matrix.columns.map((rowCol,i)=>(
                         <React.Fragment key={rowCol}>
-                          <div style={{fontSize:8,color:T.textMuted,fontWeight:500,display:'flex',alignItems:'center',paddingRight:8,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{rowCol}</div>
-                          {data.summary.corr_matrix.values[i].map((val,j)=><HeatmapCell key={j} value={val??0}/>)}
+                          <div style={{fontSize:8,color:T.textSecondary,fontWeight:500,display:'flex',alignItems:'center',paddingRight:8,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{rowCol}</div>
+                          {data.summary.corr_matrix.values[i].map((val,j)=><HeatmapCell key={j} value={val??0} dark={darkMode}/>)}
                         </React.Fragment>
                       ))}
                     </div>
@@ -997,7 +1000,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
                         <tr>{data.summary?.columns?.map(col=>(
                           <th key={col} style={{padding:'10px 14px',whiteSpace:'nowrap',cursor:'pointer'}} onClick={()=>handleSort(col)} onMouseEnter={e=>e.currentTarget.style.background=T.chip} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                             <p style={{fontSize:'11px',fontWeight:600,color:T.textPrimary,marginBottom:'2px',display:'flex',alignItems:'center',gap:'4px'}}>{col}{sortCol===col&&<span style={{fontSize:'9px'}}>{sortDir==='asc'?'↑':'↓'}</span>}</p>
-                            <span style={{fontSize:'9px',padding:'1px 6px',borderRadius:'3px',fontWeight:600,background:data.summary?.types?.[col]==='Numeric'?T.textPrimary:T.textSecondary,color:'#fff'}}>{data.summary?.types?.[col]||'FEATURE'}</span>
+                            <span style={{fontSize:'9px',padding:'1px 6px',borderRadius:'3px',fontWeight:600,background:data.summary?.types?.[col]==='Numeric'?T.navy:T.accent,color:'#716969'}}>{data.summary?.types?.[col]||'FEATURE'}</span>
                           </th>
                         ))}</tr>
                       </thead>
@@ -1079,8 +1082,8 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 {CHART_TYPES.map(chart=>(
-                  <button key={chart.id} onClick={()=>toggleChart(chart.id)} style={{padding:'10px 12px',borderRadius:'8px',textAlign:'left',cursor:'pointer',border:'none',transition:'all 0.15s',background:selectedCharts.includes(chart.id)?T.textPrimary:T.bg,outline:`1px solid ${selectedCharts.includes(chart.id)?T.textPrimary:T.border}`}}>
-                    <p style={{fontSize:'11px',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:selectedCharts.includes(chart.id)?T.surface:T.textSecondary}}>{chart.label}</p>
+                  <button key={chart.id} onClick={()=>toggleChart(chart.id)} style={{padding:'10px 12px',borderRadius:'8px',textAlign:'left',cursor:'pointer',border:'none',transition:'all 0.15s',background:selectedCharts.includes(chart.id)?T.navy:T.bg,outline:`1px solid ${selectedCharts.includes(chart.id)?T.navy:T.border}`}}>
+                    <p style={{fontSize:'11px',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:selectedCharts.includes(chart.id)?'#716969':T.textSecondary}}>{chart.label}</p>
                     {suggestedCharts.includes(chart.id) && <div style={{fontSize:'9px',fontWeight:500,marginTop:'3px',color:selectedCharts.includes(chart.id)?'rgba(255,255,255,0.4)':T.textMuted}}>suggested</div>}
                   </button>
                 ))}
@@ -1114,7 +1117,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-5 rounded-xl" style={card}><p style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px',color:T.textMuted}}>Equation</p><p style={{fontSize:'15px',fontFamily:'monospace',color:T.textPrimary}}>{regressionResult.equation}</p></div>
                 <div className="p-5 rounded-xl" style={card}><p style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px',color:T.textMuted}}>Pearson r · R²</p><p style={{fontSize:'15px',fontFamily:'monospace',color:T.textPrimary}}>{regressionResult.r?.toFixed(3)} · {regressionResult.r2?.toFixed(3)}</p></div>
-                <div className="p-5 rounded-xl" style={{background:T.textPrimary,borderRadius:'12px'}}><p style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px',color:'rgba(255,255,255,0.4)'}}>Insight</p><p style={{fontSize:'12px',fontWeight:400,lineHeight:'1.6',color:'#fff'}}>{regressionResult.insight}</p></div>
+                <div className="p-5 rounded-xl" style={{background:T.navy,borderRadius:'12px'}}><p style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px',color:'rgba(255,255,255,0.4)'}}>Insight</p><p style={{fontSize:'12px',fontWeight:400,lineHeight:'1.6',color:'#716969'}}>{regressionResult.insight}</p></div>
               </div>
             )}
             {regressionResult?.status==='error' && <div className="p-5 rounded-xl" style={{background:'#FDE8E8',border:'1px solid #F4A0A0'}}><p style={{fontFamily:'monospace',fontSize:'12px',color:'#C0392B'}}>Error: {regressionResult.message}</p></div>}
@@ -1142,7 +1145,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
             {regressionAnalysis && (
               <div className="p-6 rounded-xl card-in" style={{background:T.surface,border:`1px solid ${T.border}`}}>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{background:T.accentDark}}><FileText size={12} style={{color:'#fff'}}/></div>
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{background:T.accentDark}}><FileText size={12} style={{color:'#716969'}}/></div>
                   <p style={{fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',color:T.accentDark}}>Written Analysis</p>
                   <span style={{fontSize:'9px',fontWeight:500,padding:'2px 8px',borderRadius:'99px',marginLeft:'4px',background:T.chip,color:T.textSecondary}}>Auto-generated</span>
                 </div>
@@ -1166,11 +1169,11 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
         {data && activeTab==='clean' && (
           <div className="space-y-5 pb-20">
             {selectedRows.size>0 && (
-              <div className="flex flex-wrap items-center gap-2 px-4 py-3 rounded-xl" style={{background:T.textPrimary}}>
+              <div className="flex flex-wrap items-center gap-2 px-4 py-3 rounded-xl" style={{background:T.navy}}>
                 <span style={{fontSize:'11px',fontWeight:500,color:'rgba(255,255,255,0.5)'}}>{selectedRows.size} row{selectedRows.size!==1?'s':''} selected</span>
                 <div className="flex gap-2 ml-auto flex-wrap">
                   {[{fn:copySelectedToClipboard,icon:<Copy size={10}/>,label:'Copy'},{fn:duplicateSelectedRows,icon:<SquareStack size={10}/>,label:'Duplicate'}].map(({fn,icon,label})=>(
-                    <button key={label} onClick={fn} style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'11px',fontWeight:500,padding:'6px 12px',borderRadius:'6px',color:'#fff',border:'1px solid rgba(255,255,255,0.18)',background:'rgba(255,255,255,0.08)',cursor:'pointer'}}>{icon}{label}</button>
+                    <button key={label} onClick={fn} style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'11px',fontWeight:500,padding:'6px 12px',borderRadius:'6px',color:'#716969',border:'1px solid rgba(255,255,255,0.18)',background:'rgba(255,255,255,0.08)',cursor:'pointer'}}>{icon}{label}</button>
                   ))}
                   <button onClick={()=>setConfirmDropRows(true)} style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'11px',fontWeight:500,padding:'6px 12px',borderRadius:'6px',color:'#F4A0A0',border:'1px solid rgba(244,160,160,0.3)',background:'rgba(160,64,64,0.25)',cursor:'pointer'}}><Trash2 size={10}/> Delete rows</button>
                 </div>
@@ -1178,8 +1181,8 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
             )}
 
             <div className="rounded-xl overflow-hidden" style={{background:T.surface,border:`1.5px solid ${T.textPrimary}`}}>
-              <div className="px-5 py-3.5 flex items-center gap-3" style={{background:T.textPrimary}}>
-                <Pencil size={12} style={{color:'rgba(255,255,255,0.45)'}}/><p style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Editable Data Table</p><span style={{fontSize:'11px',color:'rgba(255,255,255,0.3)',marginLeft:'4px'}}>— double-click any cell to edit</span>
+              <div className="px-5 py-3.5 flex items-center gap-3" style={{background:T.navy}}>
+                <Pencil size={12} style={{color:'rgba(255,255,255,0.45)'}}/><p style={{fontSize:'13px',fontWeight:600,color:'#716969'}}>Editable Data Table</p><span style={{fontSize:'11px',color:'rgba(255,255,255,0.3)',marginLeft:'4px'}}>— double-click any cell to edit</span>
               </div>
               <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
                 <table className="w-full text-left border-collapse" style={{fontSize:'11px'}}>
@@ -1191,7 +1194,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
                         <th key={col} style={{padding:'10px 12px',whiteSpace:'nowrap'}}>
                           <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
                             <span style={{fontSize:'11px',fontWeight:600,color:T.textPrimary}}>{col}</span>
-                            <span style={{fontSize:'9px',fontWeight:600,padding:'1px 5px',borderRadius:'3px',background:data.summary?.types?.[col]==='Numeric'?T.textPrimary:T.textSecondary,color:'#fff'}}>{data.summary?.types?.[col]==='Numeric'?'#':'A'}</span>
+                            <span style={{fontSize:'9px',fontWeight:600,padding:'1px 5px',borderRadius:'3px',background:data.summary?.types?.[col]==='Numeric'?T.navy:T.accent,color:'#716969'}}>{data.summary?.types?.[col]==='Numeric'?'#':'A'}</span>
                           </div>
                         </th>
                       ))}
@@ -1221,7 +1224,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
 
             {numericCols.length>0 && (
               <div className="rounded-xl overflow-hidden" style={{background:T.surface,border:`1.5px solid ${T.textPrimary}`}}>
-                <div className="px-5 py-3.5 flex items-center gap-2" style={{background:T.textPrimary}}><Calculator size={13} style={{color:'rgba(255,255,255,0.5)'}}/><p style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Column Calculations</p></div>
+                <div className="px-5 py-3.5 flex items-center gap-2" style={{background:T.navy}}><Calculator size={13} style={{color:'rgba(255,255,255,0.5)'}}/><p style={{fontSize:'13px',fontWeight:600,color:'#716969'}}>Column Calculations</p></div>
                 <div className="p-5">
                   <div className="flex flex-wrap gap-2 mb-4">
                     <select value={calcCol} onChange={e=>{setCalcCol(e.target.value);setCalcResult(null);}} style={{fontSize:'12px',fontWeight:500,outline:'none',padding:'8px 12px',borderRadius:'8px',background:T.surfaceAlt,border:`1.5px solid ${T.textPrimary}`,color:calcCol?T.textPrimary:T.textMuted,cursor:'pointer'}}><option value="">Select column</option>{numericCols.map(c=><option key={c} value={c}>{c}</option>)}</select>
@@ -1229,10 +1232,10 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
                       <option value="sum">Sum</option><option value="avg">Average</option><option value="min">Min</option><option value="max">Max</option><option value="count">Count</option><option value="mul">Multiply by scalar</option><option value="div">Divide by scalar</option><option value="sub">Subtract scalar</option><option value="pct">Percentage of scalar</option>
                     </select>
                     {['mul','div','sub','pct'].includes(calcOp) && <input type="number" placeholder="Scalar value" value={calcScalar} onChange={e=>setCalcScalar(e.target.value)} style={{fontSize:'12px',fontWeight:500,outline:'none',padding:'8px 12px',borderRadius:'8px',width:'128px',background:T.surfaceAlt,border:`1.5px solid ${T.textPrimary}`,color:T.textPrimary}}/>}
-                    <button onClick={runCalc} disabled={!calcCol} style={{fontSize:'12px',fontWeight:500,padding:'8px 20px',borderRadius:'8px',background:T.textPrimary,color:T.surface,border:'none',cursor:'pointer',opacity:!calcCol?0.4:1}}>Calculate</button>
+                    <button onClick={runCalc} disabled={!calcCol} style={{fontSize:'12px',fontWeight:500,padding:'8px 20px',borderRadius:'8px',background:T.navy,color:'#716969',border:'none',cursor:'pointer',opacity:!calcCol?0.4:1}}>Calculate</button>
                     {['mul','div','sub'].includes(calcOp)&&calcCol&&calcScalar && <button onClick={applyCalcToCol} style={{fontSize:'12px',fontWeight:500,padding:'8px 16px',borderRadius:'8px',color:T.textPrimary,border:`1.5px solid ${T.textPrimary}`,background:'transparent',cursor:'pointer'}}>Apply to column</button>}
                   </div>
-                  {calcResult!==null && <div style={{borderRadius:'10px',padding:'12px 16px',display:'flex',alignItems:'flex-start',gap:'12px',marginBottom:'16px',background:T.textPrimary}}><span style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',flexShrink:0,marginTop:'2px',color:'rgba(255,255,255,0.35)'}}>Result</span><span style={{fontSize:'13px',fontWeight:600,wordBreak:'break-all',color:'#fff'}}>{typeof calcResult==='number'?calcResult.toLocaleString(undefined,{maximumFractionDigits:6}):calcResult}</span></div>}
+                  {calcResult!==null && <div style={{borderRadius:'10px',padding:'12px 16px',display:'flex',alignItems:'flex-start',gap:'12px',marginBottom:'16px',background:T.navy}}><span style={{fontSize:'10px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',flexShrink:0,marginTop:'2px',color:'rgba(255,255,255,0.35)'}}>Result</span><span style={{fontSize:'13px',fontWeight:600,wordBreak:'break-all',color:'#716969'}}>{typeof calcResult==='number'?calcResult.toLocaleString(undefined,{maximumFractionDigits:6}):calcResult}</span></div>}
                   {calcCol && (
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                       {[{op:'sum',label:'Sum',icon:<Sigma size={11}/>},{op:'avg',label:'Avg',icon:<Hash size={11}/>},{op:'min',label:'Min',icon:<Minus size={11}/>},{op:'max',label:'Max',icon:<ArrowUpDown size={11}/>},{op:'count',label:'Count',icon:<Hash size={11}/>}].map(({op,label,icon})=>{
@@ -1250,13 +1253,13 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
               <div className="p-5 rounded-xl" style={{background:T.chip,border:`1px solid ${T.borderStrong}`}}>
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div><p style={{fontSize:'12px',fontWeight:500,marginBottom:'4px',color:T.textSecondary}}>Remove Duplicates</p><p style={{fontSize:'14px',fontWeight:600,color:T.textPrimary}}>{data.summary.duplicate_count} duplicate rows detected</p><p style={{fontSize:'11px',marginTop:'4px',color:T.textMuted}}>Permanently removes duplicates, keeping the first occurrence.</p></div>
-                  <button onClick={()=>cleanAction('remove_duplicates')} disabled={cleanLoading} style={{fontSize:'12px',fontWeight:500,padding:'8px 20px',borderRadius:'8px',background:T.accent,color:'#fff',border:'none',cursor:'pointer',opacity:cleanLoading?0.5:1,whiteSpace:'nowrap'}}>Remove Duplicates</button>
+                  <button onClick={()=>cleanAction('remove_duplicates')} disabled={cleanLoading} style={{fontSize:'12px',fontWeight:500,padding:'8px 20px',borderRadius:'8px',background:T.accent,color:'#716969',border:'none',cursor:'pointer',opacity:cleanLoading?0.5:1,whiteSpace:'nowrap'}}>Remove Duplicates</button>
                 </div>
               </div>
             )}
 
             <div className="rounded-xl overflow-hidden" style={{background:T.surface,border:`1.5px solid ${T.textPrimary}`}}>
-              <div style={{padding:'12px 20px',background:T.textPrimary}}><p style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Fill Missing Values</p></div>
+              <div style={{padding:'12px 20px',background:T.navy}}><p style={{fontSize:'13px',fontWeight:600,color:'#716969'}}>Fill Missing Values</p></div>
               <div className="p-4 space-y-2">
                 {data.summary?.columns?.filter(col=>(data.summary.missing_info?.[col]?.count||0)>0).map(col=>{
                   const isNum=data.summary.types?.[col]==='Numeric';
@@ -1273,12 +1276,12 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
             </div>
 
             <div className="rounded-xl overflow-hidden" style={{border:'1.5px solid #C0392B'}}>
-              <div style={{padding:'12px 20px',background:'#C0392B',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px'}}><p style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Drop Columns</p><p style={{fontSize:'11px',color:'rgba(255,255,255,0.55)'}}>Permanently removes from backend — re-upload to restore</p></div>
+              <div style={{padding:'12px 20px',background:'#C0392B',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px'}}><p style={{fontSize:'13px',fontWeight:600,color:'#716969'}}>Drop Columns</p><p style={{fontSize:'11px',color:'rgba(255,255,255,0.55)'}}>Permanently removes from backend — re-upload to restore</p></div>
               <div style={{padding:'16px',background:T.surface}}>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {data.summary?.columns?.map(col=>(
                     <button key={col} onClick={()=>setConfirmDrop({col})} disabled={cleanLoading} className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all${droppingCol===col?' col-drop-flash':''}`} style={{background:droppingCol===col?'#C0392B':T.bg,border:`1px solid ${droppingCol===col?'#C0392B':T.borderStrong}`,cursor:'pointer',opacity:cleanLoading?0.5:1}} onMouseEnter={e=>{if(droppingCol!==col){e.currentTarget.style.background='#C0392B';e.currentTarget.style.borderColor='#C0392B';}}} onMouseLeave={e=>{if(droppingCol!==col){e.currentTarget.style.background=T.bg;e.currentTarget.style.borderColor=T.borderStrong;}}}>
-                      <span style={{fontSize:'12px',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'80%',color:droppingCol===col?'#fff':T.textPrimary}}>{col}</span>
+                      <span style={{fontSize:'12px',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'80%',color:droppingCol===col?'#716969':T.textPrimary}}>{col}</span>
                       <Trash2 size={11} style={{color:droppingCol===col?'rgba(255,255,255,0.7)':T.textMuted,flexShrink:0,marginLeft:'4px'}}/>
                     </button>
                   ))}
@@ -1287,7 +1290,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
             </div>
 
             <div className="rounded-xl overflow-hidden" style={{border:`1.5px solid ${T.accent}`}}>
-              <div style={{padding:'12px 20px',background:T.accent,display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px'}}><div style={{display:'flex',alignItems:'center',gap:'8px'}}><CheckCircle2 size={13} style={{color:'rgba(255,255,255,0.7)'}}/><p style={{fontSize:'13px',fontWeight:600,color:'#fff'}}>Live Dataset — Backend State</p></div><p style={{fontSize:'11px',color:'rgba(255,255,255,0.45)'}}>{data.summary?.columns?.length} columns · {data.summary?.total_rows?.toLocaleString()} rows</p></div>
+              <div style={{padding:'12px 20px',background:T.accent,display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px'}}><div style={{display:'flex',alignItems:'center',gap:'8px'}}><CheckCircle2 size={13} style={{color:'rgba(255,255,255,0.7)'}}/><p style={{fontSize:'13px',fontWeight:600,color:'#716969'}}>Live Dataset — Backend State</p></div><p style={{fontSize:'11px',color:'rgba(255,255,255,0.45)'}}>{data.summary?.columns?.length} columns · {data.summary?.total_rows?.toLocaleString()} rows</p></div>
               <div className="overflow-x-auto max-h-[300px] overflow-y-auto" style={{background:T.surface}}>
                 <table className="w-full text-left border-collapse" style={{fontSize:'11px'}}>
                   <thead className="sticky top-0 z-10" style={{background:T.surfaceAlt,borderBottom:`1.5px solid ${T.borderStrong}`}}>
@@ -1335,7 +1338,7 @@ td{padding:9px 13px;border-bottom:1px solid #C8D8F0;color:#2D3E8A}
                     </div>
                   </div>
                   <div className="flex gap-2 w-full lg:w-auto">
-                    <button onClick={()=>reloadEntry(entry)} style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'12px',padding:'7px 16px',borderRadius:'8px',background:T.textPrimary,color:T.surface,border:'none',cursor:'pointer'}}><RotateCcw size={10}/> Reload</button>
+                    <button onClick={()=>reloadEntry(entry)} style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'12px',padding:'7px 16px',borderRadius:'8px',background:T.navy,color:'#716969',border:'none',cursor:'pointer'}}><RotateCcw size={10}/> Reload</button>
                     <button onClick={()=>exportEntry(entry)} style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',fontWeight:500,fontSize:'12px',padding:'7px 16px',borderRadius:'8px',color:T.textSecondary,border:`1px solid ${T.border}`,background:T.surface,cursor:'pointer'}}><Download size={10}/> CSV</button>
                     <button onClick={()=>deleteEntry(entry.id)} style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'7px 10px',borderRadius:'8px',color:T.textMuted,border:`1px solid ${T.border}`,background:'none',cursor:'pointer',transition:'all 0.15s'}} onMouseEnter={e=>{e.currentTarget.style.color='#C0392B';e.currentTarget.style.borderColor='#F4A0A0';}} onMouseLeave={e=>{e.currentTarget.style.color=T.textMuted;e.currentTarget.style.borderColor=T.border;}}><Trash2 size={12}/></button>
                   </div>
